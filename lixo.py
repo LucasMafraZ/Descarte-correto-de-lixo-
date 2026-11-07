@@ -66,7 +66,7 @@ async def CaraCoroa(ctx):
     await ctx.send(resultado)
 
 @bot.command()
-async def pokemon(ctx):
+async def pokemon_beta(ctx):
     img_name = random.choice(os.listdir('pokemon'))
     with open(f'pokemon/{img_name}', 'rb') as f:
         picture = discord.File(f)
@@ -83,33 +83,82 @@ async def duck(ctx):
     image_url = get_duck_image_url()
     await ctx.send(image_url)
 
+def get_pokemon(id):    
+    url = (f'https://pokeapi.co/api/v2/pokemon/{id}/')
+    res = requests.get(url)
+    data = res.json()
+    pokemon = {}
+    pokemon["nome"] = data["name"]
+    pokemon['id'] = data['id']
+    pokemon["imagem"] = data["sprites"]["other"]["home"]["front_default"]
+    return pokemon
+
+
+@bot.command('pokemon')
+async def pokemon(ctx, id):
+    pokemon = get_pokemon(id)
+    await ctx.send(f'O pokemon sorteado foi {pokemon["nome"]}. Id = {pokemon['id']} {pokemon["imagem"]}')
+
+
+lixos = {
+    'papel': {
+        'exemplos': 'Jornais, revistas, caixas de papelão e folhas',
+        'descarte': 'Lixeira azul (recicláveis)'
+    },
+
+    'plástico': {
+        'exemplos': 'Garrafas PET, embalagens e sacolas',
+        'descarte': 'Lixeira vermelha (recicláveis)'
+    },
+
+    'vidro': {
+        'exemplos': 'Garrafas, potes e frascos',
+        'descarte': 'Lixeira verde (recicláveis)'
+    },
+
+    'metal': {
+        'exemplos': 'Latas de refrigerante e alimentos',
+        'descarte': 'Lixeira amarela (recicláveis)'
+    },
+
+    'orgânico': {
+        'exemplos': 'Restos de comida, cascas de frutas e verduras',
+        'descarte': 'Compostagem ou lixo orgânico'
+    },
+
+    'eletrônico': {
+        'exemplos': 'Celulares, pilhas, baterias e carregadores',
+        'descarte': 'Pontos de coleta específicos'
+    },
+
+    'rejeito': {
+        'exemplos': 'Papel higiênico, fraldas e absorventes',
+        'descarte': 'Lixo comum'
+    }
+}
+
+
 @bot.command()
 async def lixo(ctx, lixo):
-    if lixo == 'papel':
-        await ctx.send(f'{lixo}: Jornais, revistas, caixas de papelão e folhas')
-        await ctx.send('Devemos descarta-lo na Lixeira azul (recicláveis)')
-    elif lixo == 'plástico':
-        await ctx.send(f'{lixo}: Garrafas PET, embalagens e sacolas')
-        await ctx.send('Devemos descarta-lo na Lixeira vermelha (recicláveis)')
-    elif lixo == 'vidro':
-        await ctx.send(f'{lixo}: Garrafas, potes e frascos')
-        await ctx.send('Devemos descarta-lo na Lixeira verde (recicláveis)')
-    elif lixo == 'metal':
-        await ctx.send(f'{lixo}: Latas de refrigerante e alimentos')
-        await ctx.send('Devemos descarta-lo na Lixeira amarela (recicláveis)')
-    elif lixo == 'orgânico':
-        await ctx.send(f'{lixo}: Restos de comida, cascas de frutas e verduras')
-        await ctx.send('Devemos descarta-lo na compostagem ou lixo orgânico')
-    elif lixo == 'eletrônico':
-        await ctx.send(f'{lixo}: Celulares, pilhas, baterias e carregadores')
-        await ctx.send('Devemos descarta-lo em pontos de coleta específicos')
-    elif lixo == 'lixo':
-        await ctx.send('tipos de lixo que aceitamos: papel, plástico, vidro, metal, eletrônico, orgânico, rejeito (escrito em minúsculo)')
-    elif lixo == 'rejeito':
-        await ctx.send(f'{lixo}: Papel higiênico, fraldas e absorventes')
-        await ctx.send('Devemos descarta-lo no lixo comum')
+    lixo = lixo.lower()
+
+    if lixo == 'lixo':
+        await ctx.send(
+            'Tipos de lixo aceitos: papel, plástico, vidro, metal, '
+            'eletrônico, orgânico e rejeito.'
+        )
+
+    elif lixo in lixos:
+        await ctx.send(f'{lixo}: {lixos[lixo]["exemplos"]}')
+        await ctx.send(f'Devemos descartar em: {lixos[lixo]["descarte"]}')
+        with open(f'lixo/{lixo}.jpg', 'rb') as f:
+                picture = discord.File(f)
+                await ctx.send(file=picture)
+        
+
     else:
-        await ctx.send('desculpe, não conheço esse tipo de lixo. ')
-        await ctx.send('tipos de lixo que aceitamos: papel, plástico, vidro, metal, eletrônico, orgânico, rejeito (escrito em minúsculo)')
+        await ctx.send('Desculpe, não conheço esse tipo de lixo.')
+        await ctx.send('Digite lixo para consultar os tipos aceitos.')
+
         
 bot.run("token")
